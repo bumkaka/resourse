@@ -1,5 +1,6 @@
 <?php
 /**
+version: 0.2.0
 Author: Bumkaka from modx.im 
 
 USE:
