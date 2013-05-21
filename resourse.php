@@ -1,13 +1,17 @@
 <?php
 /**
-Author: Bumkaka from modx.im
-Code style: Sith
+Author: Bumkaka from modx.im 
 */
+if(!defined('MODX_BASE_PATH')) {die('What are you doing? Get out of here!');}
+
+
 class resourse {
 	static $_instance = null;
+	private $fire_events = 0;
 	public $id;
 	public $field;
 	public $tv;
+	public $tvid;
 	public $log;
 	public $new_resourse;
 	public $dafeult_field;
@@ -30,6 +34,7 @@ class resourse {
       $sync->setCachepath(MODX_BASE_PATH . "assets/cache/");
       $sync->setReport(false);
       $sync->emptyCache();
+	  if ($this->fire_events == 1) $this->invokeEvent('OnSiteRefresh');
 	}
 	
 	public function set($key,$value){
@@ -44,7 +49,25 @@ class resourse {
 		$this->set[]=' '.$key.'="'.$this->field[$key].'" ';
 	}
 	
-	public function save(){
+	public function dublicate($id){
+		$result = $this->query('SELECT * from PREFIX_site_content where id='.(int)$id);
+		$row = $this->modx->db->getRow($result);
+		foreach($row as $key=>$value) $this->field[$key]=$value;
+		
+		$result = $this->query('SELECT * from PREFIX_site_tmplvar_contentvalues where contentid='.(int)$id);
+		while ($row = $this->modx->db->getRow($result)){
+			$this->field[ $this->tvid[$row['tmplvarid']] ] = $row['value'];
+		}
+		unset($this->field['id']);
+	}
+	
+	public function delete($id,$fire_events = 0){
+		$this->query('DELETE from PREFIX_site_content where id='.(int)$id);
+		$this->query('DELETE from PREFIX_site_tmplvar_contentvalues where contentid='.(int)$id);
+	}
+	
+	public function save($fire_events = 0){
+		$this->fire_events = $fire_events;
 		if ($this->field['pagetitle'] == '') {
 			$this->log[] =  'Pagetitle is empty in <pre>'.print_r($this->field,true).'</pre>';
 			return false;
@@ -64,7 +87,7 @@ class resourse {
 			$this->query($SQL);
 		}
 		$id = $this->new_resourse? $this->modx->db->getInsertId():$this->id;
-		
+		$this->id = $id;
 		foreach($fld as $key=>$value){
 			if ($value=='') continue;
  			if ($this->tv[$key]!=''){
@@ -75,6 +98,7 @@ class resourse {
 				}
 			}
 		}
+		if ($this->fire_events == 1) $this->invokeEvent('OnDocFormSave');
 		return 	$id;
 	}
 	
@@ -84,7 +108,10 @@ class resourse {
 	
 	public function get_TV(){
 		$result = $this->query("SELECT id,name FROM `PREFIX_site_tmplvars`");
-		while($row = $this->modx->db->GetRow($result)) $this->tv[$row['name']] = $row['id'];
+		while($row = $this->modx->db->GetRow($result)) {
+			$this->tv[$row['name']] = $row['id'];
+			$this->tvid[$row['id']] = $row['name'];
+		}
 	}
 	
 	public function translite($alias){
@@ -95,7 +122,16 @@ class resourse {
 		return $this->modx->db->query(str_replace('PREFIX_',$this->modx->db->config['table_prefix'],$SQL));
 	}
 	
+	public function document($id=0){
+		$this->new_resourse = $id == 0;
+		$this->id = $id;
+		$this->field=array();
+		$this->set=array();
+		$this->default_field = array('pagetitle'=>'New document','alias'=>'','parent'=>0,'createdon'=>time(),'createdby'=>'0','editedon'=>'0','editedby'=>'0','published'=>'1','deleted'=>'0','hidemenu'=>'1','template'=>'0','content'=>'');
+	}
+	
 	private function __construct(){
+		global $modx;
 		$this->modx = $modx;
 		$this->get_TV();
 	}
@@ -105,11 +141,7 @@ class resourse {
 	static function Instance($id=0){
 		if (self::$_instance == NULL){self::$_instance = new self();}
 		$self = self::$_instance;
-		$self->new_resourse = $id == 0;
-		$self->id = $id;
-		$self->field=array();
-		$self->set=array();
-		$self->default_field = array('pagetitle'=>'New document','alias'=>'','parent'=>0,'createdon'=>time(),'createdby'=>'0','editedon'=>'0','editedby'=>'0','published'=>'1','deleted'=>'0','hidemenu'=>'1','template'=>'0','content'=>'');
+		$self->document($id);
 		return $self;
 	}
 }
