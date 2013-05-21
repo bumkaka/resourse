@@ -32,14 +32,23 @@ class resourse {
       $sync->emptyCache();
 	}
 	
-	public function set($key,$value){$this->field[$key] = $value;}
+	public function set($key,$value){
+		$this->field[$key] = $value;
+	}
 	
-	public function get($key){return $this->field[$key];}
+	public function get($key){
+		return $this->field[$key];
+	}
 	
-	public function Uset($key){$this->set[]=' '.$key.'="'.$this->field[$key].'" ';}
+	public function Uset($key){
+		$this->set[]=' '.$key.'="'.$this->field[$key].'" ';
+	}
 	
 	public function save(){
-		if ($this->field['pagetitle'] == '') {$this->log[] =  'Pagetitle is empty in <pre>'.print_r($this->field,true).'</pre>';return false;}
+		if ($this->field['pagetitle'] == '') {
+			$this->log[] =  'Pagetitle is empty in <pre>'.print_r($this->field,true).'</pre>';
+			return false;
+		}
 		if ($this->field['alias'] == '') $this->field['alias'] = $this->translite($this->field['pagetitle']);
 
 		$fld = $this->field;
@@ -66,21 +75,30 @@ class resourse {
 				}
 			}
 		}
-		return true;
+		return 	$id;
 	}
 	
-	public function list_log(){echo '<pre>'.print_r($this->log,true).'</pre>';}
+	public function list_log(){
+		echo '<pre>'.print_r($this->log,true).'</pre>';
+	}
 	
 	public function get_TV(){
 		$result = $this->query("SELECT id,name FROM `PREFIX_site_tmplvars`");
 		while($row = $this->modx->db->GetRow($result)) $this->tv[$row['name']] = $row['id'];
 	}
 	
-	public function translite($alias){return strtr($alias, $this->table);}
+	public function translite($alias){
+		return strtr($alias, $this->table);
+	}
 	
-	public function query($SQL){return $this->modx->db->query(str_replace('PREFIX_',$this->modx->db->config['table_prefix'],$SQL));}
+	public function query($SQL){
+		return $this->modx->db->query(str_replace('PREFIX_',$this->modx->db->config['table_prefix'],$SQL));
+	}
 	
-	private function __construct(){global $modx;$this->modx = $modx;$this->get_TV();}
+	private function __construct(){
+		$this->modx = $modx;
+		$this->get_TV();
+	}
 
 	private final function __clone(){throw new Exception('Clone is not allowed');}
 	
