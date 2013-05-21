@@ -1,6 +1,25 @@
 <?php
 /**
 Author: Bumkaka from modx.im 
+
+USE:
+require_once('assets/libs/resourse.php');
+$resourse=resourse::Instance();
+
+#------------------------------------------------------
+$resourse->document();
+$resourse->set('titl','Пропаганда');
+$resourse->set('pagetitle',$i);
+$resourse->save();
+
+#-------------------------------------------------------
+#Return created id of dublicated from resourse #13 
+$resourse->dublicate(13);
+$id = $resourse->save();
+
+#-------------------------------------------------------
+$resourse->delete(8);
+
 */
 if(!defined('MODX_BASE_PATH')) {die('What are you doing? Get out of here!');}
 
