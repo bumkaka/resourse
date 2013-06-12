@@ -148,6 +148,7 @@ class resourse {
 		$this->field=array();
 		$this->set=array();
 		$this->default_field = array('pagetitle'=>'New document','alias'=>'','parent'=>0,'createdon'=>time(),'createdby'=>'0','editedon'=>'0','editedby'=>'0','published'=>'1','deleted'=>'0','hidemenu'=>'1','template'=>'0','content'=>'');
+	
 	}
 	
 	private function __construct(){
